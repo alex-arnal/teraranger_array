@@ -11,7 +11,7 @@
 #define BUFFER_SIZE 20
 
 #define SERIAL_SPEED 115200
-#define SERIAL_TIMEOUT_MS 2000 	// Value adapted to avoid timeout when reconfiguring
+#define SERIAL_TIMEOUT_MS 2000 // Value adapted to avoid timeout when reconfiguring
 #define CMD_BYTE_LENGTH 4
 
 #define OUT_OF_RANGE_VALUE -1
@@ -70,8 +70,9 @@ public:
   serial::Serial serial_port_;
   boost::function<void(uint8_t)> serial_data_callback_function_;
 
-  std::string portname_;
+  std::string portname_, sensor_frame_id_, base_frame_id_;
   std::string ns_;
+
 private:
   teraranger_array::RangeArray range_array_msg;
 };

@@ -13,6 +13,8 @@ TerarangerHubMultiflex::TerarangerHubMultiflex()
   // Get parameters
   ros::NodeHandle private_node_handle_("~");
   private_node_handle_.param("portname", portname_, std::string("/dev/ttyACM0"));
+  private_node_handle_.param("frame_id", sensor_frame_id_, std::string("base_range_"));
+  private_node_handle_.param("base_frame_id", base_frame_id_, std::string("base_hub"));
 
   // Publishers
   range_publisher_ = nh_.advertise<teraranger_array::RangeArray>("ranges", 1);
@@ -28,7 +30,7 @@ TerarangerHubMultiflex::TerarangerHubMultiflex()
 
   serial_port_.open();
 
-  if(!serial_port_.isOpen())
+  if (!serial_port_.isOpen())
   {
     ROS_ERROR("Could not open : %s ", portname_.c_str());
     ros::shutdown();
@@ -43,14 +45,12 @@ TerarangerHubMultiflex::TerarangerHubMultiflex()
   ns_ = ros::names::clean(ns_);
   if (ns_ != "" && ns_[0] == '/')
   { // Remove first backslash if needed
-    ns_.erase(0,1);
+    ns_.erase(0, 1);
   }
   ROS_INFO("node namespace: [%s]", ns_.c_str());
 
-  std::string frame_id = "base_range_";
-
   // Initialize rangeArray
-  for (size_t i=0; i < SENSOR_COUNT; i++)
+  for (size_t i = 0; i < SENSOR_COUNT; i++)
   {
     sensor_msgs::Range range;
     range.field_of_view = FIELD_OF_VIEW;
@@ -61,11 +61,11 @@ TerarangerHubMultiflex::TerarangerHubMultiflex()
     // set the right range frame depending of the namespace
     if (ns_ == "")
     {
-     range.header.frame_id = frame_id + boost::lexical_cast<std::string>(i);
+      range.header.frame_id = sensor_frame_id_ + boost::lexical_cast<std::string>(i);
     }
     else
     {
-     range.header.frame_id = ns_ + '_'+ frame_id + boost::lexical_cast<std::string>(i);
+      range.header.frame_id = ns_ + '_' + sensor_frame_id_ + boost::lexical_cast<std::string>(i);
     }
     range_array_msg.ranges.push_back(range);
   }
@@ -73,11 +73,11 @@ TerarangerHubMultiflex::TerarangerHubMultiflex()
   // set the right RangeArray frame depending of the namespace
   if (ns_ == "")
   {
-    range_array_msg.header.frame_id = "base_hub";
+    range_array_msg.header.frame_id = base_frame_id_;
   }
   else
   {
-    range_array_msg.header.frame_id = "base_" + ns_;
+    range_array_msg.header.frame_id = base_frame_id_ + ns_;
   }
 
   // Set operation Mode
@@ -122,7 +122,7 @@ void TerarangerHubMultiflex::parseCommand(uint8_t *input_buffer, uint8_t len)
       float final_range;
       if ((bitmask & bit_compare) == bit_compare)
       {
-        if(ranges[i] == OUT_OF_RANGE_VALUE)
+        if (ranges[i] == OUT_OF_RANGE_VALUE)
         {
           final_range = std::numeric_limits<float>::infinity();
         }
@@ -130,7 +130,7 @@ void TerarangerHubMultiflex::parseCommand(uint8_t *input_buffer, uint8_t len)
         {
           final_range = std::numeric_limits<float>::infinity(); // convert to m
         }
-        else if(ranges[i] < int_min_range)
+        else if (ranges[i] < int_min_range)
         {
           final_range = -std::numeric_limits<float>::infinity();
         }
@@ -147,7 +147,7 @@ void TerarangerHubMultiflex::parseCommand(uint8_t *input_buffer, uint8_t len)
       bit_compare <<= 1;
       range_array_msg.ranges.at(i).range = final_range;
     }
-    range_array_msg.header.seq = (int)seq_ctr/8;
+    range_array_msg.header.seq = (int)seq_ctr / 8;
     range_array_msg.header.stamp = ros::Time::now();
     range_publisher_.publish(range_array_msg);
   }
@@ -235,7 +235,7 @@ void TerarangerHubMultiflex::serialDataCallback(uint8_t single_character)
 
 void TerarangerHubMultiflex::setMode(const char *c)
 {
-  if(!serial_port_.write((uint8_t*)c, CMD_BYTE_LENGTH))
+  if (!serial_port_.write((uint8_t *)c, CMD_BYTE_LENGTH))
   {
     ROS_ERROR("Timeout or error while writing serial");
   }
@@ -259,7 +259,7 @@ void TerarangerHubMultiflex::setSensorBitMask(int *sensor_bit_mask_ptr)
   //send command
   char full_command[5] = {(char)0x00, (char)0x52, (char)0x03, (char)bit_mask_hex, (char)crc};
 
-  if(!serial_port_.write((uint8_t*)full_command, 5))
+  if (!serial_port_.write((uint8_t *)full_command, 5))
   {
     ROS_ERROR("Timeout or error while sending command");
   }
@@ -327,9 +327,9 @@ std::string TerarangerHubMultiflex::IntToString(int number)
 void TerarangerHubMultiflex::spin()
 {
   static uint8_t buffer[1];
-  while(ros::ok())
+  while (ros::ok())
   {
-    if(serial_port_.read(buffer, 1))
+    if (serial_port_.read(buffer, 1))
     {
       serialDataCallback(buffer[0]);
     }
@@ -340,7 +340,7 @@ void TerarangerHubMultiflex::spin()
     ros::spinOnce();
   }
 }
-}
+} // namespace teraranger_array
 
 int main(int argc, char **argv)
 {
