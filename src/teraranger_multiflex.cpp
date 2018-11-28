@@ -14,6 +14,7 @@ TerarangerHubMultiflex::TerarangerHubMultiflex()
   ros::NodeHandle private_node_handle_("~");
   private_node_handle_.param("portname", portname_, std::string("/dev/ttyACM0"));
   private_node_handle_.param("sensor_frame_id", sensor_frame_id_, std::string("base_range_"));
+  std::cout << sensor_frame_id_ << std::endl;
   private_node_handle_.param("base_frame_id", base_frame_id_, std::string("base_hub"));
 
   // Publishers
@@ -51,7 +52,7 @@ TerarangerHubMultiflex::TerarangerHubMultiflex()
     range.radiation_type = sensor_msgs::Range::INFRARED;
     range.range = 0.0;
     // set the right range frame depending of the namespace
-    range.header.frame_id = sensor_frame_id_ + boost::lexical_cast<std::string>(i);
+    range.header.frame_id = sensor_frame_id_ + "_" + boost::lexical_cast<std::string>(i);
     range_array_msg.ranges.push_back(range);
   }
 
