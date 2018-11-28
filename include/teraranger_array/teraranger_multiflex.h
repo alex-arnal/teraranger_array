@@ -71,7 +71,6 @@ public:
   boost::function<void(uint8_t)> serial_data_callback_function_;
 
   std::string portname_, sensor_frame_id_, base_frame_id_;
-  std::string ns_;
 
 private:
   teraranger_array::RangeArray range_array_msg;

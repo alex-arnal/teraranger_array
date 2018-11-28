@@ -41,14 +41,6 @@ TerarangerHubMultiflex::TerarangerHubMultiflex()
   ROS_INFO("[%s] is up and running with the following parameters:", ros::this_node::getName().c_str());
   ROS_INFO("[%s] portname: %s", ros::this_node::getName().c_str(), portname_.c_str());
 
-  ns_ = ros::this_node::getNamespace();
-  ns_ = ros::names::clean(ns_);
-  if (ns_ != "" && ns_[0] == '/')
-  { // Remove first backslash if needed
-    ns_.erase(0, 1);
-  }
-  ROS_INFO("node namespace: [%s]", ns_.c_str());
-
   // Initialize rangeArray
   for (size_t i = 0; i < SENSOR_COUNT; i++)
   {
@@ -59,26 +51,12 @@ TerarangerHubMultiflex::TerarangerHubMultiflex()
     range.radiation_type = sensor_msgs::Range::INFRARED;
     range.range = 0.0;
     // set the right range frame depending of the namespace
-    if (ns_ == "")
-    {
-      range.header.frame_id = sensor_frame_id_ + boost::lexical_cast<std::string>(i);
-    }
-    else
-    {
-      range.header.frame_id = ns_ + '_' + sensor_frame_id_ + boost::lexical_cast<std::string>(i);
-    }
+    range.header.frame_id = sensor_frame_id_ + boost::lexical_cast<std::string>(i);
     range_array_msg.ranges.push_back(range);
   }
 
   // set the right RangeArray frame depending of the namespace
-  if (ns_ == "")
-  {
-    range_array_msg.header.frame_id = base_frame_id_;
-  }
-  else
-  {
-    range_array_msg.header.frame_id = base_frame_id_ + ns_;
-  }
+  range_array_msg.header.frame_id = base_frame_id_;
 
   // Set operation Mode
   setMode(BINARY_MODE);
