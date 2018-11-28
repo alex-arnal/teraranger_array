@@ -13,7 +13,7 @@ TerarangerHubMultiflex::TerarangerHubMultiflex()
   // Get parameters
   ros::NodeHandle private_node_handle_("~");
   private_node_handle_.param("portname", portname_, std::string("/dev/ttyACM0"));
-  private_node_handle_.param("frame_id", sensor_frame_id_, std::string("base_range_"));
+  private_node_handle_.param("sensor_frame_id", sensor_frame_id_, std::string("base_range_"));
   private_node_handle_.param("base_frame_id", base_frame_id_, std::string("base_hub"));
 
   // Publishers
